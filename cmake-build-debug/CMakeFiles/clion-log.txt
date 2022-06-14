@@ -1,0 +1,13 @@
+/home/justin/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/213.6461.75/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/justin/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/213.6461.75/bin/ninja/linux/ninja -G Ninja "/home/justin/CLionProjects/Fast Sparse Spanner"
+-- Configuring done
+CMake Error at CMakeLists.txt:6 (add_executable):
+  Cannot find source file:
+
+    PointGenerators.h
+
+
+CMake Error at CMakeLists.txt:6 (add_executable):
+  No SOURCES given to target: Fast_Sparse_Spanner
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.
