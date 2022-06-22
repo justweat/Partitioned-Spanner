@@ -9,6 +9,16 @@
 
 namespace spanners{
 
+    /*
+     * Finds centroid for a partition to use as the leader point
+     *
+     * Params:
+     * points: entire point set
+     * partition: unique pointer to the current partition
+     *
+     * Returns:
+     * index of centroid
+     */
     size_t findCentroid(const vector<Point> &points,
                         unique_ptr<Partition>& partition){
 

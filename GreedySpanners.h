@@ -12,6 +12,22 @@
 
 namespace spanners{
 
+    /*
+     * Constructs a geometric spanner where all |V| choose 2 pairs (u,v)
+     * within the graph contain the invariant that their
+     * graphPath(u,v) <= t * d(u,v)
+     *
+     * Specialized for partitioned cells
+     *
+     * Params:
+     * points: entire point set
+     * indices: original index for each point within the point set
+     * adjMap: adjacency list for this partition
+     * t: spanner invariant
+     *
+     * Returns:
+     * CellInfo consisting of distance matrix for this partition, indices used to index into distance matrix, and edges
+     */
     CellInfo FG_GreedySpanner_PartitionedCell(const vector<Point> &points,
                                               const vector<size_t> &indices,
                                               unordered_map<size_t, vector<size_t>> &adjMap,
@@ -74,6 +90,18 @@ namespace spanners{
         return CellInfo{distances, local_indices, edges};
     }
 
+    /*
+     * Constructs a geometric spanner where all |V| choose 2 pairs (u,v)
+     * within the graph contain the invariant that their
+     * graphPath(u,v) <= t * d(u,v)
+     *
+     * Params:
+     * points: entire point set
+     * t: spanner invariant
+     *
+     * Returns:
+     * Graph consisting of points used, edges created, and adjacency list
+     */
     Graph FG_GreedySpanner(const vector<Point>& points,
                            double t){
 

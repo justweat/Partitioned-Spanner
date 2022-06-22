@@ -10,6 +10,23 @@
 
 namespace spanners{
 
+    /*
+     * Used to determine the path costs within a partitioned cell.
+     * Specialized to reduce the memory cost as each partition consists of
+     * a small subset of points relative to the entire point set
+     * As such, a localIndices map is required to translate from
+     * original index to local index in order to retrieve values
+     *
+     * Params:
+     * points: entire point set
+     * indices: original indices used to index into points
+     * u: source vertex
+     * adjMap: partitions adjacency list
+     * localIndices: map to translate from original indices to local indices
+     *
+     * Returns:
+     * path costs for all vertices from source u
+     */
     vector<number_t> Dijkstra_PartitionedCells(const vector<Point> &points,
                                                const vector<size_t> &indices,
                                                size_t u,
@@ -46,6 +63,18 @@ namespace spanners{
 
     }
 
+    /*
+     * Traditional Dijkstra
+     *
+     * Params:
+     * points: entire point set
+     * indices: used to index points
+     * u: source vertex
+     * adjMap: graph adjaceny list
+     *
+     * Returns:
+     * path costs for all vertices from source u
+     */
     vector<number_t> Dijkstra(const vector<Point> &points,
                               const vector<size_t> &indices,
                               size_t u,
@@ -81,104 +110,18 @@ namespace spanners{
 
     }
 
-    number_t DijkstaReturnDistances_PartitionedCells(
-                                    const vector<Point> &points,
-                                    const vector<size_t> &indices,
-                                    size_t u, size_t v,
-                                    const unordered_map<size_t, vector<size_t>> &adjMap,
-                                    const unordered_map<size_t, size_t> &local_indices,
-                                    vector<number_t> &distances){
-
-        size_t n = indices.size();
-
-        vector<number_t> local_distances(n, CGAL_IA_MAX_DOUBLE);
-        local_distances[local_indices.at(u)] = 0;
-
-
-        function<bool(const pair<size_t, number_t>&, const pair<size_t, number_t>&)> cmp =
-                [](const pair<size_t, number_t> &o1, const pair<size_t, number_t> &o2){
-                    return o2.second < o1.second;
-                };
-
-        priority_queue<pair<size_t, number_t>, vector<pair<size_t, number_t>>,
-                function<bool(const pair<size_t, number_t>&, const pair<size_t, number_t>)>> pq(cmp);
-
-        pq.push(pair<size_t, number_t>{u, 0});
-
-        while(!pq.empty()){
-
-            auto [cur_point, path_distance] = pq.top();
-            pq.pop();
-
-            auto adj_nodes = adjMap.at(cur_point);
-
-            for(const auto &i : adj_nodes){
-                number_t dist_curToAdj = local_distances[local_indices.at(cur_point)] + CGAL::sqrt(CGAL::squared_distance(points[cur_point], points[i]));
-                if(local_distances[local_indices.at(i)] > dist_curToAdj && local_distances[local_indices.at(cur_point)] != CGAL_IA_MAX_DOUBLE){
-                    local_distances[local_indices.at(i)] = dist_curToAdj;
-                    pq.push(pair<size_t, number_t>{i, dist_curToAdj});
-                }
-            }
-        }
-
-        for(const auto &i : indices){
-            distances[local_indices.at(i)] = local_distances[local_indices.at(i)];
-        }
-
-        return local_distances[local_indices.at(v)];
-
-    }
-
-    number_t Dijksta_RestrictedPath_ReturnDistanceVector(const vector<Point> &points,
-                                    const vector<size_t> &indices,
-                                    size_t u, size_t v,
-                                    const unordered_map<size_t, vector<size_t>> &adjMap,
-                                    const unordered_map<size_t, size_t> &local_indices,
-                                    const unordered_set<size_t> &permitted_indices,
-                                    vector<number_t> &distances){
-
-        size_t n = indices.size();
-
-        vector<number_t> local_distances(n, CGAL_IA_MAX_DOUBLE);
-        local_distances[local_indices.at(u)] = 0;
-
-
-        function<bool(const pair<size_t, number_t>&, const pair<size_t, number_t>&)> cmp =
-                [](const pair<size_t, number_t> &o1, const pair<size_t, number_t> &o2){
-                    return o2.second < o1.second;
-                };
-
-        priority_queue<pair<size_t, number_t>, vector<pair<size_t, number_t>>,
-                function<bool(const pair<size_t, number_t>&, const pair<size_t, number_t>)>> pq(cmp);
-
-        pq.push(pair<size_t, number_t>{u, 0});
-
-        while(!pq.empty()){
-
-            auto [cur_point, path_distance] = pq.top();
-            pq.pop();
-
-            auto adj_nodes = adjMap.at(cur_point);
-
-            for(const auto &i : adj_nodes){
-                if(permitted_indices.find(i) != permitted_indices.end()){
-                    number_t dist_curToAdj = path_distance + CGAL::sqrt(CGAL::squared_distance(points[cur_point], points[i]));
-                    if(local_distances[local_indices.at(i)] > dist_curToAdj){
-                        local_distances[local_indices.at(i)] = dist_curToAdj;
-                        pq.push(pair<size_t, number_t>{i, dist_curToAdj});
-                    }
-                }
-            }
-        }
-
-        for(const auto &i : indices){
-            distances[local_indices.at(i)] = local_distances[local_indices.at(i)];
-        }
-
-        return local_distances[local_indices.at(v)];
-
-    }
-
+    /*
+     * Traditional a* search algorithm using h = d(i, goal)
+     *
+     * Params:
+     * points: entire point set
+     * adjMap: adjacency list
+     * u: source
+     * v: goal
+     *
+     * Returns:
+     * path cost from source u to goal v
+     */
     number_t aStar(const vector<Point> &points,
                    const unordered_map<size_t, vector<size_t>> &adjMap,
                    size_t u, size_t v){
@@ -192,8 +135,6 @@ namespace spanners{
                 function<bool(const pair<size_t, number_t>&, const pair<size_t, number_t>)>> openSet(cmp);
 
         openSet.push(pair<size_t, number_t>{u, 0});
-
-//        unordered_map<size_t, size_t> cameFrom{};
 
         unordered_map<size_t, number_t> g_score{}, f_score;
         g_score.insert(pair<size_t, number_t>{u, 0});
@@ -211,12 +152,6 @@ namespace spanners{
 
             auto [cur_pt, f] = openSet.top();
             if(cur_pt == v){
-//                number_t path{};
-//                size_t traveler = v;
-//                while(traveler != u){
-//                    path += CGAL::sqrt(CGAL::squared_distance(points[traveler], points[cameFrom.at(traveler)]));
-//                    traveler = cameFrom.at(traveler);
-//                }
                 return g_score.at(v);
             }
             openSet.pop();
@@ -242,12 +177,6 @@ namespace spanners{
                 }
 
                 if(tentative_gScore < g_score.at(a)){
-
-//                    if(cameFrom.find(a) == cameFrom.end()){
-//                        cameFrom.insert(pair<size_t, size_t>{a, cur_pt});
-//                    }else{
-//                        cameFrom.at(a) = cur_pt;
-//                    }
 
                     g_score.at(a) = tentative_gScore;
 

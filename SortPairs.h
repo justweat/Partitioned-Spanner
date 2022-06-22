@@ -10,10 +10,13 @@
 namespace spanners{
 
     function<bool(const pair<Edge, number_t>&, const pair<Edge, number_t>&)> PointPairPQ_comparator =
-            [](const pair<Edge, number_t> &placed, const pair<Edge, number_t> &searching)->bool{
-                return searching.second < placed.second;
+            [](const pair<Edge, number_t> &o1, const pair<Edge, number_t> &o2)->bool{
+                return o2.second < o1.second;
             };
 
+    /*
+     * Sorts all n choose 2 points into non-decreasing order
+     */
     PointPairPQ sortPairs(const vector<Point> &points, const vector<size_t> &indices){
 
         vector<pair<Edge, number_t>> pairs;
@@ -27,6 +30,9 @@ namespace spanners{
         return PointPairPQ(PointPairPQ_comparator, pairs);
     }
 
+    /*
+     * Sorts all points from node1 to node2 in non-decreasing order
+     */
     PointPairPQ sortPairs_DisjointCells(const vector<Point> &points, const vector<size_t> &node1, const vector<size_t> &node2){
 
         vector<pair<Edge, number_t>> pairs;

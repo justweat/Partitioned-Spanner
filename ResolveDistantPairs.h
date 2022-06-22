@@ -11,6 +11,23 @@
 
 namespace spanners{
 
+    /*
+     * Candidate distant pair defined as:
+     * From Partition_i to Partition_j, if:
+     * distance from centroid of Partition_i to any bounding box corner of Partition_i * t +
+     * leader spanner cost from Partition_i to Partition_j +
+     * distance from centroid of Partition_j to any bounding box corner of Partition_j * t >
+     * d(bounding box corner from Partition_i, bounding box corner from Partition_j)
+     * consider this a candidate pair to be resolved
+     *
+     * Params:
+     * points: entire point set
+     * t: spanner invariant
+     * leaves: unique ptrs to each Partition
+     * leaderSpanner: centroid spanner used to ensure connected graph
+     * contiguousNeighborCheck: determines whether this pair has already been resolved contiguously
+     *
+     */
     vector<pair<size_t, size_t>> findCandidatePairs(const vector<Point> &points,
                                                     double t,
                                                     const vector<unique_ptr<Partition>>& leaves,
@@ -72,6 +89,24 @@ namespace spanners{
 
     }
 
+    /*
+     * Merges distant pairs using the Bridging heurstic described in PartitionedSpanners.h
+     *
+     * Params:
+     * points: entire point set
+     * adjMap: adjacency list of entire graph
+     * leaderPoints: centroids from partitions
+     * leaves: unique pts to each partition
+     * validDistantPairs: candidate pairs from findCandidatePairs()
+     * leaderSpanner: centroid spanner
+     * t: spanner invariant
+     * begin/end: indices into validDistantPairs [begin, end]
+     * resolvedEdges: all edges used to resolve distant pairs between all threads
+     * resolvedEdgesLock: mutex for resolvedEdges
+     *
+     * Returns:
+     * void
+     */
     void mergeDistantPairs(const vector<Point>& points,
                            const unordered_map<size_t, vector<size_t>>& adjMap,
                            const vector<Point>& leaderPoints,
@@ -137,6 +172,23 @@ namespace spanners{
 
     }
 
+    /*
+     * Launch threads to concurrently resolve distant pairs
+     *
+     * Params:
+     * points: entire point set
+     * adjMap: adjacency list of entire graph
+     * leaderPoints: centroids from partitions
+     * leaves: unique pts to each partition
+     * t: spanner invariant
+     * leaderSpanner: centroid spanner
+     * contiguousNeighborCheck:set of partition indices that were involved in contiguous neighbor resolution
+     * numOfThreads: max number of threads for concurrent resolution
+     *
+     * Returns:
+     * all edges needed to resolve distant pairs
+     *
+     */
     vector<Edge> resolveDistantPairs(const vector<Point> &points,
                                      const unordered_map<size_t, vector<size_t>>& adjMap,
                                      const vector<Point>& leaderPoints,

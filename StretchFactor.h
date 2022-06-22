@@ -17,6 +17,19 @@ namespace spanners{
         number_t stretchFactor{};
     };
 
+    /*
+     * Measures the stretch factor of the graph
+     * Defined as max( path(u, v) / d(u, v))
+     *
+     * Params:
+     * points: entire point set
+     * indices: index into each point
+     * adjMap: adjacency list
+     * t: spanner invariant (used here to determine any pair (u, v) that violates the invariant)
+     * begin/end: this thread's indices to measure using SSSP from each index [begin, end]
+     * results: report SF results and any red edges from this thread
+     * resultsLock: mutex for results
+     */
     void MeasureStretchFactor(const vector<Point>& points,
                               const vector<size_t>& indices,
                               const unordered_map<size_t, vector<size_t>>& adjMap,
@@ -62,6 +75,20 @@ namespace spanners{
 
     }
 
+    /*
+     * Concurrently measure stretch factor of graph
+     * Defined as max( path(u, v) / d(u, v))
+     *
+     * Params:
+     * points: entire point set
+     * adjmap: adjacency list
+     * t: spanner invariant (used here to determine any pair (u, v) that violates the invariant)
+     * numOfThreads: max number of threads used
+     *
+     * Returns:
+     * StretchFactorResult consisting of max stretch factor found as well as any edges
+     * that violate this invariant
+     */
     StretchFactorResult ParallelStretchFactor(const vector<Point>& points,
                                               const unordered_map<size_t, vector<size_t>>& adjMap,
                                               number_t t,
@@ -75,7 +102,7 @@ namespace spanners{
 
         size_t block = n / numOfThreads;
         if(block == 0){
-            block = 1;
+            block = n;
         }
 
         StretchFactorResult results{};

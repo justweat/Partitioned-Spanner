@@ -18,6 +18,17 @@ namespace spanners{
         set<pair<size_t, size_t>> contiguousNeighborCheck{};
     };
 
+    /*
+     * Finds contiguous neighbors for each quadtree node in the N, E, NE, and NW directions
+     *
+     * Params:
+     * qtLeaves: original nodes from quadtree
+     * leafIdentifier: map to translate from neighbors found to index of Partitions
+     *
+     * Returns:
+     * ContiguousNeighbors consisting of vectors for the above directions and a set to ensure these
+     * pairs are not used again for distant pair resolution
+     */
     ContiguousNeighbors findContiguousNeighbors(const vector<QT_Node>& qtLeaves,
                                                 const map<QT_Node, size_t>& leafIdentifier){
 
@@ -111,6 +122,17 @@ namespace spanners{
 
     }
 
+    /*
+     * Resolves contiguous neighbors by merging them
+     *
+     * Params:
+     * points: entire point set
+     * leaves: unique ptrs to each Partition/leaf
+     * neighbors: pairs of Partitions to be resolved
+     * t: spanner invariant
+     * begin/end: pairs of indices into leaves to be resolved [begin, end]
+     * Direction: current merging direction
+     */
     void mergeContiguousNeighbors(const vector<Point>& points,
                                   vector<unique_ptr<Partition>>& leaves,
                                   const vector<pair<size_t, size_t>>& neighbors,
@@ -118,6 +140,8 @@ namespace spanners{
                                   size_t begin,
                                   size_t end,
                                   Direction direction){
+
+        //TODO: investigate whether NE and NW mergers require initial bridges; direction param currently unused
 
         for(size_t i{begin}; i < end; ++i){
 
@@ -188,6 +212,18 @@ namespace spanners{
     }
 
 
+    /*
+     * Launch threads to resolve contiguous neighbors
+     *
+     * Params:
+     * points: entire point set
+     * t: spanner invariant
+     * leaves: unique ptrs to each Partition/leaf
+     * neighbors: vectors of contiguous neighbors to be resolved found within
+     *
+     * Returns:
+     * void (results stored using Partition ptrs)
+     */
     void resolveContiguousNeighbors(const vector<Point> &points,
                                     double t,
                                     vector<unique_ptr<Partition>>& leaves,

@@ -9,6 +9,10 @@
 
 namespace spanners{
 
+    /*
+     * Recurses quadtree nodes until reaching leaf
+     * Used for: S node finding N neighbors
+     */
     void findLeafNeighbors_North(QT_Node cur, vector<QT_Node> &neighbors){
         if(cur.is_leaf()){
             neighbors.emplace_back(cur);
@@ -18,6 +22,10 @@ namespace spanners{
         findLeafNeighbors_North(cur[1], neighbors);
     }
 
+    /*
+    * Recurses quadtree nodes until reaching leaf
+    * Used for: E node finding W neighbors
+    */
     void findLeafNeighbors_West(QT_Node cur, vector<QT_Node> &neighbors){
         if(cur.is_leaf()){
             neighbors.emplace_back(cur);
@@ -27,6 +35,10 @@ namespace spanners{
         findLeafNeighbors_West(cur[1], neighbors);
     }
 
+    /*
+    * Recurses quadtree nodes until reaching leaf
+    * Used for: N node finding S neighbors
+    */
     void findLeafNeighbors_South(QT_Node cur, vector<QT_Node> &neighbors){
         if(cur.is_leaf()){
             neighbors.emplace_back(cur);
@@ -36,6 +48,10 @@ namespace spanners{
         findLeafNeighbors_South(cur[3], neighbors);
     }
 
+    /*
+    * Recurses quadtree nodes until reaching leaf
+    * Used for: NW node finding SE neighbors
+    */
     void findLeafNeighbors_SE(QT_Node cur, vector<QT_Node> &neighbors){
         if(cur.is_leaf()){
             neighbors.emplace_back(cur);
@@ -44,6 +60,10 @@ namespace spanners{
         findLeafNeighbors_SE(cur[2], neighbors);
     }
 
+    /*
+    * Recurses quadtree nodes until reaching leaf
+    * Used for: NE node finding SW neighbors
+    */
     void findLeafNeighbors_SW(QT_Node cur, vector<QT_Node> &neighbors){
         if(cur.is_leaf()){
             neighbors.emplace_back(cur);
@@ -52,6 +72,10 @@ namespace spanners{
         findLeafNeighbors_SW(cur[3], neighbors);
     }
 
+    /*
+    * Recurses quadtree nodes until reaching leaf
+    * Used for: W node finding E neighbors
+    */
     void findLeafNeighbors_East(QT_Node cur, vector<QT_Node> &neighbors){
         if(cur.is_leaf()){
             neighbors.emplace_back(cur);
@@ -61,6 +85,10 @@ namespace spanners{
         findLeafNeighbors_East(cur[2], neighbors);
     }
 
+    /*
+    * Recurses quadtree nodes until reaching leaf
+    * Used for: SW node finding NE neighbors
+    */
     void findLeafNeighbors_NE(QT_Node cur, vector<QT_Node> &neighbors){
         if(cur.is_leaf()){
             neighbors.emplace_back(cur);
@@ -69,6 +97,10 @@ namespace spanners{
         findLeafNeighbors_NE(cur[0], neighbors);
     }
 
+    /*
+    * Recurses quadtree nodes until reaching leaf
+    * Used for: SE node finding NW neighbors
+    */
     void findLeafNeighbors_NW(QT_Node cur, vector<QT_Node> &neighbors){
         if(cur.is_leaf()){
             neighbors.emplace_back(cur);

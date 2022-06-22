@@ -12,6 +12,21 @@
 
 namespace spanners{
 
+    /*
+     * Initializes the partitions to consist of:
+     * -Greedy spanner
+     * -Bounding box
+     * -Leader/centroid point
+     *
+     * Params:
+     * points: entire point set
+     * partitions: unique pts to each partition
+     * t: spanner invariant
+     * begin/end: indices within partitions for this thread to initialize [begin, end]
+     *
+     * Returns:
+     * void (results stored using partition ptr)
+     */
     void createPartitions(const vector<Point>& points,
                           vector<unique_ptr<Partition>>& partitions,
                           double t,
@@ -36,6 +51,17 @@ namespace spanners{
 
     }
 
+    /*
+     * Launch threads to initialize partitions
+     *
+     * partitions: unique ptrs to each leaf/partition
+     * points: entire point set
+     * t: spanner invariant
+     * numOfThreads: max number of threads
+     *
+     * Returns:
+     * void (results stored using partition ptr)
+     */
     void initializePartitions(vector<unique_ptr<Partition>>& partitions,
                                       const vector<Point>& points,
                                       double t,
@@ -49,13 +75,13 @@ namespace spanners{
 
         size_t block = n / numOfThreads;
         if(block == 0){
-            block = 1;
+            block = n;
         }
 
         vector<thread> threads{};
 
-        for(size_t i{}; i <= n; i += block){
-            threads.emplace_back(createPartitions, cref(points), ref(partitions), t, i, min(n, i + block));
+        for(size_t i{}; i < n; i += block){
+            threads.emplace_back(createPartitions, cref(points), ref(partitions), t, i, min(n - 1, i + block));
         }
 
         for(auto& thread : threads){
