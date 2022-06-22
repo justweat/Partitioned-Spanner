@@ -240,10 +240,10 @@ namespace spanners{
                 totalEdges.push_back(e);
             }
 
-            for(const auto& e : distantEdges){
-                totalEdges.push_back(e);
-            }
+        }
 
+        for(const auto& e : distantEdges){
+            totalEdges.push_back(e);
         }
 
         if(!leaderSpannerConstructor){
