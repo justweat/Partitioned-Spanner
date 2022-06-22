@@ -21,7 +21,7 @@ namespace spanners{
          * sort pairs of points between each partition from i to j in non-decreasing order denoted (Pi, Pj)
          * based on their Euclidean distance.
          * For each bridge in existence where Bi is the entrance from Partition_i and Bj is the exit into Partition_j,
-         * Reusing the distance matrices from the partition initialization,
+         * reuse the distance matrices from the partition initialization and
          * determine whether there exists a viable path such that
          * Path(Pi, Bi) + d(Bi, Bj) + Path(Bj, Pj) <= t * d(Pi, Pj)
          * If true, move to next pair.
