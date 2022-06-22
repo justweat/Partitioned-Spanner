@@ -71,7 +71,7 @@ namespace spanners{
         cout << "SF: " << results.stretchFactor << "\n";
         cout << "Red Edges: " << results.errors.size() << "\n";
 
-        if(spanner.edges.size() < 50000){
+        if(spanner.edges.size() + results.errors.size() < 50000){
             GraphPrinter printer("./", "article");
             printer.autoscale(points.begin(), points.end());
             printer.drawEdges(spanner.edges.begin(), spanner.edges.end(), points);

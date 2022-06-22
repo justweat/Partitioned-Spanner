@@ -29,10 +29,14 @@ namespace spanners{
      * ContiguousNeighbors consisting of vectors for the above directions and a set to ensure these
      * pairs are not used again for distant pair resolution
      */
-    ContiguousNeighbors findContiguousNeighbors(const vector<QT_Node>& qtLeaves,
-                                                const map<QT_Node, size_t>& leafIdentifier){
+    ContiguousNeighbors findContiguousNeighbors(const map<QT_Node, size_t>& leafIdentifier){
 
         ContiguousNeighbors contiguousNeighbors{};
+
+        vector<QT_Node> qtLeaves{};
+        for(auto i : leafIdentifier){
+            qtLeaves.push_back(i.first);
+        }
 
         vector<Direction> contiguousMergeDirections{Direction::North, Direction::East, Direction::NorthEast, Direction::NorthWest};
 

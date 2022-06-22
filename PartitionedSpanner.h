@@ -79,10 +79,9 @@ namespace spanners{
 
         //Unique ptrs to all partitions
         vector<unique_ptr<Partition>> leaves{};
-        unordered_map<size_t, Partition&> leafInfo{};
+
+        //Used for finding continguous neighbors
         map<QT_Node, size_t> leafIdentifier{};
-        //Required for contiguous neighbor finding
-        vector<QT_Node> qtLeaves{};
 
         /*
          * Decompose the point set into partitions while
@@ -99,9 +98,7 @@ namespace spanners{
             }
             Partition auxNode{indices, partitionIndex, i, pts};
             leaves.push_back(make_unique<Partition>(auxNode));
-            leafInfo.insert(pair<size_t, Partition&>{partitionIndex, auxNode});
             leafIdentifier.insert(pair<QT_Node, size_t>{i, partitionIndex});
-            qtLeaves.emplace_back(i);
             ++partitionIndex;
         }
 
@@ -120,7 +117,7 @@ namespace spanners{
          * North, East, NorthEast, and NorthWest partitions
          * adjacent to the ith partition
          */
-        ContiguousNeighbors contiguousNeighbors = findContiguousNeighbors(qtLeaves, leafIdentifier);
+        ContiguousNeighbors contiguousNeighbors = findContiguousNeighbors(leafIdentifier);
 
         /*
          * Join partition initialization here
@@ -145,10 +142,18 @@ namespace spanners{
          * Use centroids to establish a "leader spanner"
          * Required to ensure that partitions are connected
          */
+
         vector<Point> leaderPoints{};
+        //used to map leader spanner edges back to original spanner and update adjacency list
+        unordered_map<size_t, size_t> leaderPointTranslator{};
+        size_t leaderIndex{};
+
         for(const auto& leaf : leaves){
-            leaderPoints.push_back(IndexToPoint.at(leaf->leader));
-//            leaderPoints.push_back(points[leaf->leader]);
+            size_t originalIndex = leaf->leader;
+            size_t newIndex = leaderIndex++;
+            leaderPointTranslator.insert(pair<size_t, size_t>{newIndex, originalIndex});
+            leaderPoints.push_back(points[leaf->leader]);
+//            leaderPoints.push_back(IndexToPoint.at(leaf->leader));
         }
 
         /*
@@ -156,7 +161,6 @@ namespace spanners{
          */
         Graph leaderSpanner = FG_GreedySpanner(leaderPoints, t);
 
-         //TODO: establish a means to reuse the current constructor without recursing multiple times
 //        if(!leaderSpannerConstructor){
 //            leaderSpanner = partitionedSpanner(leaderPoints, cellSize, t, true, numOfThreads);
 //        }
@@ -182,21 +186,21 @@ namespace spanners{
         for(const auto& leaf : leaves){
 
             for(const auto& e : leaf->greedyEdges){
-                adjMap.at(e.first).emplace_back(e.second);
-                adjMap.at(e.second).emplace_back(e.first);
+                adjMap.at(e.first).push_back(e.second);
+                adjMap.at(e.second).push_back(e.first);
             }
 
             for(const auto& e : leaf->contiguousResolutionEdges){
-                adjMap.at(e.first).emplace_back(e.second);
-                adjMap.at(e.second).emplace_back(e.first);
+                adjMap.at(e.first).push_back(e.second);
+                adjMap.at(e.second).push_back(e.first);
             }
 
         }
 
         if(!leaderSpannerConstructor){
             for(const auto& e : leaderSpanner.edges){
-                adjMap.at(e.first).emplace_back(e.second);
-                adjMap.at(e.second).emplace_back(e.first);
+                adjMap.at(leaderPointTranslator.at(e.first)).push_back(leaderPointTranslator.at(e.second));
+                adjMap.at(leaderPointTranslator.at(e.second)).push_back(leaderPointTranslator.at(e.first));
             }
         }
 
@@ -228,25 +232,23 @@ namespace spanners{
 
             for(const auto& e : leaf->greedyEdges){
                 ++sumGre;
-                totalEdges.emplace_back(e);
+                totalEdges.push_back(e);
             }
 
             for(const auto& e : leaf->contiguousResolutionEdges){
                 ++sumRes;
-                totalEdges.emplace_back(e);
+                totalEdges.push_back(e);
             }
 
             for(const auto& e : distantEdges){
-                totalEdges.emplace_back(e);
+                totalEdges.push_back(e);
             }
 
         }
 
         if(!leaderSpannerConstructor){
-            for(const auto& e : leaderSpanner.edges){
-                totalEdges.emplace_back(e);
-                adjMap.at(e.first).emplace_back(e.second);
-                adjMap.at(e.second).emplace_back(e.first);
+            for(auto& e : leaderSpanner.edges){
+                totalEdges.emplace_back(leaderPointTranslator.at(e.first), leaderPointTranslator.at(e.second));
             }
         }
 
