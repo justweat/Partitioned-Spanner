@@ -4,17 +4,23 @@
 
 #include "QuadtreeNeighborFinder.h"
 #include "ResolveContiguousNeighbors.h"
-#include "FindCentroids.h"
-#include "FindCandidateDistantPairs.h"
-#include "ResolveValidDistantPairs.h"
-#include "GreedySpanners.h"
+#include "ResolveDistantPairs.h"
+#include "InitializePartitions.h"
 
 #ifndef SP_MER_17_PARTITIONEDSPANNER_H
 #define SP_MER_17_PARTITIONEDSPANNER_H
 
 namespace spanners{
 
-    Graph partitionedSpanner(vector<Point> &points, size_t cellSize, double t, bool leader = false){
+    Graph partitionedSpanner(vector<Point> &points,
+                             size_t cellSize,
+                             double t,
+                             bool leaderSpannerConstructor = false,
+                             unsigned int numOfThreads = 1){
+
+        numOfThreads = min(numOfThreads, thread::hardware_concurrency());
+
+        if(numOfThreads < 1) numOfThreads = 1;
 
         //prevents pass by const ref
         //TODO: investigate whether altering CGAL implementation is feasible
@@ -31,104 +37,124 @@ namespace spanners{
             IndexToPoint.insert(pair<size_t, Point>{i, points[i]});
         }
 
-        unordered_map<size_t, Aux_QT_Node> leaf_info{};
-        map<QT_Node, size_t> leaf_identifier{};
-        vector<QT_Node> qt_leaves{};
+        vector<unique_ptr<Partition>> leaves{};
+        unordered_map<size_t, Partition&> leafInfo{};
+        map<QT_Node, size_t> leafIdentifier{};
+        vector<QT_Node> qtLeaves{};
 
-        size_t leaf_index{}, num_of_leaves{};
+        size_t partitionIndex{};
         for(Quadtree::Node i : qt.traverse<CGAL::Orthtrees::Leaves_traversal>()){
             if(i.empty()) continue;
-            qt_leaves.emplace_back(i);
             vector<size_t> indices;
             vector<Point> pts;
             for(const auto &p : i){
                 indices.emplace_back(PointToIndex.at(p));
                 pts.emplace_back(p);
             }
-            leaf_info.insert(pair<size_t, Aux_QT_Node>{leaf_index, Aux_QT_Node{indices, leaf_index, i, pts}});
-            leaf_identifier.insert(pair<QT_Node, size_t>{i, leaf_index});
-            ++leaf_index; ++num_of_leaves;
+            Partition auxNode{indices, partitionIndex, i, pts};
+            leaves.push_back(make_unique<Partition>(auxNode));
+            leafInfo.insert(pair<size_t, Partition&>{partitionIndex, auxNode});
+            leafIdentifier.insert(pair<QT_Node, size_t>{i, partitionIndex});
+            qtLeaves.emplace_back(i);
+            ++partitionIndex;
         }
+
+        thread iniPar{initializePartitions, ref(leaves), points, t, numOfThreads};
+        ContiguousNeighbors contiguousNeighbors = findContiguousNeighbors(qtLeaves, leafIdentifier);
+        iniPar.join();
+
+        for(const auto& leaf : leaves){
+            for(const auto& i : leaf->distances){
+                for(const auto& j : i){
+                    if(j == CGAL_IA_MAX_DOUBLE){
+                        cout << "bad" << endl;
+                    }
+                }
+            }
+        }
+
+        thread resConNei{resolveContiguousNeighbors, cref(points), t, ref(leaves), cref(contiguousNeighbors), numOfThreads};
+
+        vector<Point> leaderPoints{};
+        for(const auto& leaf : leaves){
+            leaderPoints.push_back(IndexToPoint.at(leaf->leader));
+        }
+
+        Graph leaderSpanner = FG_GreedySpanner(leaderPoints, t);
+//        if(!leaderSpannerConstructor){
+//            leaderSpanner = partitionedSpanner(leaderPoints, cellSize, t, true, numOfThreads);
+//        }
 
         unordered_map<size_t, vector<size_t>> adjMap;
         for(size_t i{}; i < n; ++i){
             adjMap.insert(make_pair(i, vector<size_t>{}));
         }
 
-        vector<Edge> totalEdges{};
+        resConNei.join();
 
-        for(auto &i : leaf_info){
-            CellInfo cur = FG_GreedySpannerPartitionedCell(points, i.second.indices, adjMap, t);
-            i.second.edges = cur.edges;
-            i.second.distances = cur.distances;
-            i.second.local_indices = cur.indices;
-            for(const auto &e : i.second.edges){
-                totalEdges.emplace_back(e);
-            }
-        }
 
-        set<pair<size_t, size_t>> contiguous_neighbor_check;
-        vector<Edge> resolved_edges{};
 
-        vector<Direction> directions{Direction::North, Direction::East, Direction::NorthEast, Direction::NorthWest};
+        for(const auto& leaf : leaves){
 
-        for(auto &node : qt_leaves){
-            for(auto dir : directions){
-                vector<Edge> temp = resolveContiguousNeighbors(points,
-                                                               t,
-                                                               node,
-                                                               leaf_info,
-                                                               leaf_identifier,
-                                                               dir,
-                                                               contiguous_neighbor_check);
-                for(const auto &e : temp){
-                    adjMap.at(e.first).emplace_back(e.second);
-                    adjMap.at(e.second).emplace_back(e.first);
-                    totalEdges.emplace_back(e);
-                }
-            }
-        }
-
-        for(auto &i : leaf_info){
-            i.second.bounding_box = CGAL::bbox_2(i.second.points.begin(), i.second.points.end());
-        }
-
-        vector<Point> leaders = findCentroid(points, leaf_info, IndexToPoint);
-
-        Graph leaderSpanner;
-        if(!leader){
-            leaderSpanner = partitionedSpanner(leaders, cellSize, t, true);
-            for(const auto &e : leaderSpanner.edges){
-                totalEdges.emplace_back(e);
-            }
-        }
-
-        vector<Aux_QT_Node*> leaves;
-        for(auto &i : leaf_info){
-            leaves.emplace_back(&i.second);
-        }
-
-        vector<pair<Aux_QT_Node*, Aux_QT_Node*>> validDistantPairs = findCandidatePairs(points,
-                                                                                        t,
-                                                                                        leaves,
-                                                                                        leaderSpanner,
-                                                                                        contiguous_neighbor_check);
-
-        for(const auto &i : validDistantPairs){
-            vector<Edge> temp = resolveValidDistantPairs(points,
-                                                         leaders,
-                                                         i.first,
-                                                         i.second,
-                                                         t,
-                                                         leaderSpanner);
-
-            for(const auto &e : temp){
+            for(const auto& e : leaf->greedyEdges){
                 adjMap.at(e.first).emplace_back(e.second);
                 adjMap.at(e.second).emplace_back(e.first);
+            }
+
+            for(const auto& e : leaf->contiguousResolutionEdges){
+                adjMap.at(e.first).emplace_back(e.second);
+                adjMap.at(e.second).emplace_back(e.first);
+            }
+
+        }
+
+        if(!leaderSpannerConstructor){
+            for(const auto& e : leaderSpanner.edges){
+                adjMap.at(e.first).emplace_back(e.second);
+                adjMap.at(e.second).emplace_back(e.first);
+            }
+        }
+
+        vector<Edge> distantEdges = resolveDistantPairs(points,
+                                                        adjMap,
+                                                        leaderPoints,
+                                                        leaves,
+                                                        t,
+                                                        leaderSpanner,
+                                                        contiguousNeighbors.contiguousNeighborCheck);
+
+        vector<Edge> totalEdges{};
+
+        size_t sumGre{}, sumRes{};
+
+        for(const auto& leaf : leaves){
+
+            for(const auto& e : leaf->greedyEdges){
+                ++sumGre;
+                totalEdges.emplace_back(e);
+            }
+
+            for(const auto& e : leaf->contiguousResolutionEdges){
+                ++sumRes;
+                totalEdges.emplace_back(e);
+            }
+
+            for(const auto& e : distantEdges){
                 totalEdges.emplace_back(e);
             }
 
         }
+
+        if(!leaderSpannerConstructor){
+            for(const auto& e : leaderSpanner.edges){
+                totalEdges.emplace_back(e);
+            }
+        }
+
+        cout << "Greedy Edge Count: " << sumGre << endl;
+        cout << "Contiguous Resolution Edge Count: " << sumRes << endl;
+        cout << "Distant Resolution Edge Count: " << distantEdges.size() << endl;
+        cout << "Leader Spanner Edge Count: " << leaderSpanner.edges.size() << endl;
 
         return Graph{points, totalEdges, adjMap};
 

@@ -74,7 +74,7 @@ build cmake_object_order_depends_target_Fast_Sparse_Spanner: phony || CMakeFiles
 
 build CMakeFiles/Fast_Sparse_Spanner.dir/main.cpp.o: CXX_COMPILER__Fast_Sparse_Spanner_Debug /home/justin/CLionProjects/Fast$ Sparse$ Spanner/main.cpp || cmake_object_order_depends_target_Fast_Sparse_Spanner
   DEP_FILE = CMakeFiles/Fast_Sparse_Spanner.dir/main.cpp.o.d
-  FLAGS = -O0 -fopenmp -fexceptions -frounding-math -Wall -Wextra -Wno-unused -g -std=gnu++17
+  FLAGS = -O0 -fopenmp -fexceptions -frounding-math -Wall -Wextra -Wno-unused -pthread -g -std=gnu++17
   OBJECT_DIR = CMakeFiles/Fast_Sparse_Spanner.dir
   OBJECT_FILE_DIR = CMakeFiles/Fast_Sparse_Spanner.dir
 
@@ -87,7 +87,7 @@ build CMakeFiles/Fast_Sparse_Spanner.dir/main.cpp.o: CXX_COMPILER__Fast_Sparse_S
 # Link the executable Fast_Sparse_Spanner
 
 build Fast_Sparse_Spanner: CXX_EXECUTABLE_LINKER__Fast_Sparse_Spanner_Debug CMakeFiles/Fast_Sparse_Spanner.dir/main.cpp.o
-  FLAGS = -O0 -fopenmp -fexceptions -frounding-math -Wall -Wextra -Wno-unused -g
+  FLAGS = -O0 -fopenmp -fexceptions -frounding-math -Wall -Wextra -Wno-unused -pthread -g
   LINK_LIBRARIES = -lgmp  -lmpfr  -lboost_system  -lboost_thread  -I/usr/local/include/CGAL
   OBJECT_DIR = CMakeFiles/Fast_Sparse_Spanner.dir
   POST_BUILD = :

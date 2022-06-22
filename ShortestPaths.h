@@ -6,8 +6,80 @@
 #define SP_MER_17_SHORTESTPATHS_H
 
 #include "Utilities.h"
+#include "IndexPriorityQueue.h"
 
 namespace spanners{
+
+    vector<number_t> Dijkstra_PartitionedCells(const vector<Point> &points,
+                                               const vector<size_t> &indices,
+                                               size_t u,
+                                               const unordered_map<size_t, vector<size_t>> &adjMap,
+                                               const unordered_map<size_t, size_t> &local_indices){
+
+        vector<number_t> distances(indices.size(), CGAL_IA_MAX_DOUBLE);
+        distances[local_indices.at(u)] = 0;
+
+        IndexPQ::IndexPriorityQueue<size_t, number_t> ipq(indices, distances, IndexPQ::IndexPQType{IndexPQ::IndexPQType::MinHeap});
+        ipq.updateKey(u, 0.0);
+
+        while(!ipq.empty()){
+
+            auto [currentNode, cost] = ipq.frontKV();
+            ipq.pop();
+
+            for(auto a : adjMap.at(currentNode)){
+                if(ipq.contains(a)){
+
+                    number_t distanceFromAdjacent = cost + getDistance(points[currentNode], points[a]);
+
+                    if(distanceFromAdjacent < distances[local_indices.at(a)]){
+
+                        distances[local_indices.at(a)] = distanceFromAdjacent;
+                        ipq.updateKey(a, distanceFromAdjacent);
+
+                    }
+                }
+            }
+        }
+
+        return distances;
+
+    }
+
+    vector<number_t> Dijkstra(const vector<Point> &points,
+                              const vector<size_t> &indices,
+                              size_t u,
+                              const unordered_map<size_t, vector<size_t>> &adjMap){
+
+        vector<number_t> distances(indices.size(), CGAL_IA_MAX_DOUBLE);
+        distances[u] = 0;
+
+        IndexPQ::IndexPriorityQueue<size_t, number_t> ipq(indices, distances, IndexPQ::IndexPQType{IndexPQ::IndexPQType::MinHeap});
+        ipq.updateKey(u, 0);
+
+        while(!ipq.empty()){
+
+            auto [currentNode, cost] = ipq.frontKV();
+            ipq.pop();
+
+            for(auto a : adjMap.at(currentNode)){
+                if(ipq.contains(a)){
+
+                    number_t distanceFromAdjacent = cost + getDistance(points[currentNode], points[a]);
+
+                    if(distanceFromAdjacent < distances[a]){
+
+                        distances[a] = distanceFromAdjacent;
+                        ipq.updateKey(a, distanceFromAdjacent);
+
+                    }
+                }
+            }
+        }
+
+        return distances;
+
+    }
 
     number_t DijkstaReturnDistances_PartitionedCells(
                                     const vector<Point> &points,
@@ -158,7 +230,6 @@ namespace spanners{
 
                 number_t tentative_gScore = g_score.at(cur_pt);
 
-                //test for overflow; this may be unnecessary
                 if(tentative_gScore != CGAL_IA_MAX_DOUBLE){
                     tentative_gScore += CGAL::sqrt(CGAL::squared_distance(points[cur_pt], points[a]));
                 }

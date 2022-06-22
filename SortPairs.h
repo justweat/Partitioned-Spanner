@@ -9,6 +9,11 @@
 
 namespace spanners{
 
+    function<bool(const pair<Edge, number_t>&, const pair<Edge, number_t>&)> PointPairPQ_comparator =
+            [](const pair<Edge, number_t> &placed, const pair<Edge, number_t> &searching)->bool{
+                return searching.second < placed.second;
+            };
+
     PointPairPQ sortPairs(const vector<Point> &points, const vector<size_t> &indices){
 
         vector<pair<Edge, number_t>> pairs;

@@ -39,11 +39,6 @@ namespace spanners {
 
     typedef priority_queue<pair<Edge,number_t>, vector<pair<Edge,number_t>>, function<bool(pair<Edge,number_t>&, pair<Edge,number_t>&)>> PointPairPQ;
 
-    function<bool(const pair<Edge, number_t>&, const pair<Edge, number_t>&)> PointPairPQ_comparator =
-            [](const pair<Edge, number_t> &placed, const pair<Edge, number_t> &searching)->bool{
-                return searching.second < placed.second;
-            };
-
     const number_t PI = 3.14159265358979323846264338327950288419716939937510;
 
     number_t getDistance(Point u, Point v){
@@ -56,33 +51,40 @@ namespace spanners {
         unordered_map<size_t, vector<size_t>> adjacencyMap{};
     };
 
-    struct Aux_QT_Node{
-        Aux_QT_Node(const vector<size_t> &indices, size_t index,
-                    CGAL::Quadtree<spanners::K,
-                    std::vector<spanners::Point>>::Node node,
-                    const vector<Point> &points){
+    struct Partition{
+        Partition(const vector<size_t> &indices,
+                  size_t index,
+                  CGAL::Quadtree<spanners::K, std::vector<spanners::Point>>::Node& node,
+                  const vector<Point> &points){
+
             this->indices = indices;
-            this->index = index;
-            this->original_node = &node;
+            this->partitionIndex = index;
+            this->originalNode = &node;
             this->points = points;
+
+            for(const auto& i : indices){
+                this->adjMap.insert(make_pair(i, vector<size_t>{}));
+            }
+
         }
-        Aux_QT_Node() = default;
-        size_t index{};
+        Partition() = delete;
+        size_t partitionIndex{};
         vector<size_t> indices{};
         vector<Point> points{};
-        vector<Edge> edges{};
+        vector<Edge> greedyEdges{}, contiguousResolutionEdges{};
+        unordered_map<size_t, vector<size_t>> adjMap;
         size_t leader{};
-        size_t leaderActual{};
+        size_t leaderSpannerIndex{};
         CGAL::Bbox_2 bounding_box{};
-        CGAL::Quadtree<spanners::K, std::vector<spanners::Point>>::Node* original_node{};
+        CGAL::Quadtree<spanners::K, std::vector<spanners::Point>>::Node* originalNode{};
         vector<vector<number_t>> distances{};
-        unordered_map<size_t, size_t> local_indices{};
+        unordered_map<size_t, size_t> localIndices{};
     };
 
     struct CellInfo{
-        vector<vector<number_t>> distances;
-        unordered_map<size_t, size_t> indices;
-        vector<Edge> edges;
+        vector<vector<number_t>> partitionDistanceMatrix{};
+        unordered_map<size_t, size_t> partitionLocalIndices{};
+        vector<Edge> partitionEdges{};
     };
 
     enum class Direction {North, East, South, West, NorthEast, NorthWest, SouthEast, SouthWest};

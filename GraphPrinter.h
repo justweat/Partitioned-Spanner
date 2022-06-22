@@ -97,6 +97,10 @@ public:
     double inactiveEdgeWidth = 0.4;
 
 
+    OptionsList errorEdges = { // active edge options
+            {"color",      activeEdgeColor2},
+            {"line width", to_string(activeEdgeWidth)}
+    };
     OptionsList activeEdgeOptions = { // active edge options
             {"color",      activeEdgeColor},
             {"line width", to_string(activeEdgeWidth)}

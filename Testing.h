@@ -13,6 +13,7 @@
 #include "PointGenOptions.h"
 #include "GraphPrinter.h"
 #include "PartitionedSpanner.h"
+#include "StretchFactor.h"
 
 
 
@@ -41,8 +42,6 @@ namespace spanners{
 
     void testingPartitionSpanner(){
 
-        auto start = std::chrono::high_resolution_clock::now();
-
         vector<Point> points = GetPoints();
 
         double t{};
@@ -53,16 +52,32 @@ namespace spanners{
         cout << "Cell Size: ";
         cin >>cellSize;
 
-        Graph spanner = partitionedSpanner(points, cellSize, t);
+        unsigned int numOfThreads{};
+        cout << "Num of threads: ";
+        cin >> numOfThreads;
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        Graph spanner = partitionedSpanner(points, cellSize, t, false, numOfThreads);
 
         auto finish = std::chrono::high_resolution_clock::now();
+        auto time = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
 
+        cout << "Time: " << (time.count()/1000000)/60 << "m " << (time.count()/1000000)%60 << "s" << endl;
         cout << "Edges: " << spanner.edges.size() << endl;
+        cout << "Points: " << spanner.points.size() << endl;
+        cout << "M/N: " << static_cast<double>(spanner.edges.size()) / spanner.points.size() << endl;
+        StretchFactorResult results = ParallelStretchFactor(points, spanner.adjacencyMap, t, numOfThreads);
+        cout << "SF: " << results.stretchFactor << "\n";
+        cout << "Red Edges: " << results.errors.size() << "\n";
 
-        GraphPrinter printer("./", "article");
-        printer.autoscale(points.begin(), points.end());
-        printer.drawEdges(spanner.edges.begin(), spanner.edges.end(), points);
-        printer.display();
+        if(spanner.edges.size() < 50000){
+            GraphPrinter printer("./", "article");
+            printer.autoscale(points.begin(), points.end());
+            printer.drawEdges(spanner.edges.begin(), spanner.edges.end(), points);
+            printer.drawEdges(results.errors.begin(), results.errors.end(), points, printer.redEdge);
+            printer.display();
+        }
 
     }
 
