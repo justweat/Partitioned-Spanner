@@ -114,7 +114,7 @@ namespace spanners{
         }
 
         vector<thread> threads{};
-        for(size_t i{}; i < n; i += block){
+        for(size_t i{}; i < n; i += block + 1){
             threads.emplace_back(MeasureStretchFactor, cref(points), cref(indices), cref(adjMap), t, i, min(n - 1, i + block), ref(results), ref(resultsLock));
         }
 

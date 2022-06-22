@@ -127,7 +127,7 @@ namespace spanners{
          */
         iniPar.join();
 
-        //Safety check to ensure that cell partition correctly established
+        //Safety check to ensure that cell partitions correctly initialized
 //        for(const auto& leaf : leaves){
 //            for(const auto& i : leaf->distances){
 //                for(const auto& j : i){
@@ -148,6 +148,7 @@ namespace spanners{
         vector<Point> leaderPoints{};
         for(const auto& leaf : leaves){
             leaderPoints.push_back(IndexToPoint.at(leaf->leader));
+//            leaderPoints.push_back(points[leaf->leader]);
         }
 
         /*
@@ -244,6 +245,8 @@ namespace spanners{
         if(!leaderSpannerConstructor){
             for(const auto& e : leaderSpanner.edges){
                 totalEdges.emplace_back(e);
+                adjMap.at(e.first).emplace_back(e.second);
+                adjMap.at(e.second).emplace_back(e.first);
             }
         }
 

@@ -33,7 +33,7 @@ namespace spanners{
                           size_t begin,
                           size_t end){
 
-        for(size_t i {begin}; i < end; ++i){
+        for(size_t i {begin}; i <= end; ++i){
 
             unique_ptr<Partition>& currentPartition = partitions[i];
 
@@ -80,7 +80,7 @@ namespace spanners{
 
         vector<thread> threads{};
 
-        for(size_t i{}; i < n; i += block){
+        for(size_t i{}; i < n; i += block + 1){
             threads.emplace_back(createPartitions, cref(points), ref(partitions), t, i, min(n - 1, i + block));
         }
 

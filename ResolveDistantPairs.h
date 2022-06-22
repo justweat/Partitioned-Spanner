@@ -219,7 +219,7 @@ namespace spanners{
         mutex resolvedEdgesLock{};
 
         vector<thread> threads{};
-        for(size_t i{}; i < n; i += block){
+        for(size_t i{}; i < n; i += block + 1){
             threads.emplace_back(mergeDistantPairs,
                                  cref(points),
                                  cref(adjMap),

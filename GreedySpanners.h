@@ -108,12 +108,11 @@ namespace spanners{
         size_t n = points.size();
 
         vector<size_t> indices{};
-        indices.reserve(n);
         for(size_t i{}; i < n; ++i){
-            indices[i] = i;
+            indices.emplace_back(i);
         }
 
-        vector<vector<number_t>> distances(n, vector<number_t>{numeric_limits<double>::max()});
+        vector<vector<number_t>> distances(n, vector<number_t>(n, numeric_limits<double>::max()));
 
         PointPairPQ pairs = sortPairs(points, indices);
 

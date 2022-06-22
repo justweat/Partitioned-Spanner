@@ -143,7 +143,7 @@ namespace spanners{
 
         //TODO: investigate whether NE and NW mergers require initial bridges; direction param currently unused
 
-        for(size_t i{begin}; i < end; ++i){
+        for(size_t i{begin}; i <= end; ++i){
 
             unique_ptr<Partition>& alphaInfo = leaves[neighbors[i].first];
             unique_ptr<Partition>& betaInfo = leaves[neighbors[i].second];
@@ -239,12 +239,12 @@ namespace spanners{
             size_t n = neighbors.northNeighbors.size();
             size_t block = n / numOfThreads;
             if(block == 0){
-                block = 1;
+                block = n;
             }
 
             vector<thread> threads{};
-            for(size_t i{}; i <= n; i += block){
-                threads.emplace_back(mergeContiguousNeighbors, cref(points), ref(leaves), cref(neighbors.northNeighbors), t, i, min(n, i + block), Direction::North);
+            for(size_t i{}; i < n; i += block + 1){
+                threads.emplace_back(mergeContiguousNeighbors, cref(points), ref(leaves), cref(neighbors.northNeighbors), t, i, min(n - 1, i + block), Direction::North);
             }
 
             for(auto& thread : threads){
@@ -262,8 +262,8 @@ namespace spanners{
             }
 
             vector<thread> threads{};
-            for(size_t i{}; i < n; i += block){
-                threads.emplace_back(mergeContiguousNeighbors, cref(points), ref(leaves), cref(neighbors.eastNeighbors), t, i, min(n, i + block), Direction::East);
+            for(size_t i{}; i < n; i += block + 1){
+                threads.emplace_back(mergeContiguousNeighbors, cref(points), ref(leaves), cref(neighbors.eastNeighbors), t, i, min(n - 1, i + block), Direction::East);
             }
 
             for(auto& thread : threads){
@@ -281,8 +281,8 @@ namespace spanners{
             }
 
             vector<thread> threads{};
-            for(size_t i{}; i < n; i += block){
-                threads.emplace_back(mergeContiguousNeighbors, cref(points), ref(leaves), cref(neighbors.neNeighbors), t, i, min(n, i + block), Direction::NorthEast);
+            for(size_t i{}; i < n; i += block + 1){
+                threads.emplace_back(mergeContiguousNeighbors, cref(points), ref(leaves), cref(neighbors.neNeighbors), t, i, min(n - 1, i + block), Direction::NorthEast);
             }
 
             for(auto& thread : threads){
@@ -300,8 +300,8 @@ namespace spanners{
             }
 
             vector<thread> threads{};
-            for(size_t i{}; i < n; i += block){
-                threads.emplace_back(mergeContiguousNeighbors, cref(points), ref(leaves), cref(neighbors.nwNeighbors), t, i, min(n, i + block), Direction::NorthWest);
+            for(size_t i{}; i < n; i += block + 1){
+                threads.emplace_back(mergeContiguousNeighbors, cref(points), ref(leaves), cref(neighbors.nwNeighbors), t, i, min(n - 1, i + block), Direction::NorthWest);
             }
 
             for(auto& thread : threads){
