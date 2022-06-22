@@ -52,6 +52,9 @@ namespace spanners{
         * cellSize: partition maximum
         * leaderSpannerConstructor: initial call for constructor should be false by default
         * numOfThreads: max number of threads used
+        *
+        * Returns:
+        * Graph consisting of points, edges, and adjacency list
      */
     Graph partitionedSpanner(vector<Point> &points,
                              size_t cellSize,
