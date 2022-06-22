@@ -13,6 +13,13 @@
 namespace spanners{
 
     /*
+     * Geometric spanner
+     * Defined as a graph with an invariant t where
+     * for all |V| choose 2 pairs of points consist of paths
+     * such that path(u, v) <= d(u, v) * t
+     */
+
+    /*
          * Bridging heuristic
          * Contiguous neighbors utilize the following approach:
          * After the partitions have been initialized,
@@ -34,9 +41,7 @@ namespace spanners{
 
     //TODO: find more elegant way to structure the algo without the need of a default boolean
     /*
-        * Constructs a geometric spanner where all |V| choose 2 pairs (u,v)
-        * within the graph contain the invariant that their
-        * graphPath(u,v) <= t * d(u,v)
+        * Constructs a geometric spanner
         * Accomplished by partitioning the points into [1, cellSize] disjoint cells,
         * then merging those cells to maintain the invariant using the Bridging heuristic described above
         * all while taking advantage of the concurrent nature of this D&C algorithm
