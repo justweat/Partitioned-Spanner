@@ -16,7 +16,7 @@ namespace spanners{
      * Geometric spanner
      * -----------------
      * Defined as a graph with an invariant t >= 1 where
-     * for all |V| choose 2 pairs of points consist of paths
+     * all |V| choose 2 pairs of points consist of paths
      * such that path(u, v) <= d(u, v) * t
      */
 
