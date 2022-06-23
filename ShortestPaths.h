@@ -124,7 +124,8 @@ namespace spanners{
      */
     number_t aStar(const vector<Point> &points,
                    const unordered_map<size_t, vector<size_t>> &adjMap,
-                   size_t u, size_t v){
+                   size_t u,
+                   size_t v){
 
         function<bool(const pair<size_t, number_t>&, const pair<size_t, number_t>&)> cmp =
                 [](const pair<size_t, number_t> &o1, const pair<size_t, number_t> &o2){
