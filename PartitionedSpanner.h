@@ -14,47 +14,49 @@ namespace spanners{
 
     /*
      * Geometric spanner
-     * Defined as a graph with an invariant t where
+     * -----------------
+     * Defined as a graph with an invariant t >= 1 where
      * for all |V| choose 2 pairs of points consist of paths
      * such that path(u, v) <= d(u, v) * t
      */
 
     /*
-         * Bridging heuristic
-         * Contiguous neighbors utilize the following approach:
-         * After the partitions have been initialized,
-         * the current state of the graph consists of disjoint cells.
-         * To merge contiguous neighbors (Partition_i, Partition_j),
-         * sort pairs of points between each partition from i to j in non-decreasing order denoted (Pi, Pj)
-         * based on their Euclidean distance.
-         * For each bridge in existence where Bi is the entrance from Partition_i and Bj is the exit into Partition_j,
-         * reuse the distance matrices from the partition initialization and
-         * determine whether there exists a viable path such that
-         * Path(Pi, Bi) + d(Bi, Bj) + Path(Bj, Pj) <= t * d(Pi, Pj)
-         * If true, move to next pair.
-         * If false, create new edge and add this to Bridges.
-         *
-         * Distant pair resolution consists of the same approach except we add two initial bridges:
-         * The path from the closest pairs (Pi, Pj) that traverses the spanner in its current state
-         * The leader spanner path from the centroids of Partition_i to Partition_j
+     * Bridging heuristic
+     * ------------------
+     * Contiguous neighbors utilize the following approach:
+     * After the partitions have been initialized,
+     * the current state of the graph consists of disjoint cells.
+     * To merge contiguous neighbors (Partition_i, Partition_j),
+     * sort pairs of points between each partition from i to j in non-decreasing order denoted (Pi, Pj)
+     * based on their Euclidean distance.
+     * For each bridge in existence where Bi is the entrance from Partition_i and Bj is the exit into Partition_j,
+     * reuse the distance matrices from the partition initialization and
+     * determine whether there exists a viable path such that
+     * Path(Pi, Bi) + d(Bi, Bj) + Path(Bj, Pj) <= t * d(Pi, Pj)
+     * If true, move to next pair.
+     * If false, create new edge and add this to Bridges.
+     *
+     * Distant pair resolution consists of the same approach except we add two initial bridges:
+     * The path from the closest pairs (Pi, Pj) that traverses the spanner in its current state
+     * The leader spanner path from the centroids of Partition_i to Partition_j
      */
 
     //TODO: find more elegant way to structure the algo without the need of a default boolean
     /*
-        * Constructs a geometric spanner
-        * Accomplished by partitioning the points into [1, cellSize] disjoint cells,
-        * then merging those cells to maintain the invariant using the Bridging heuristic described above
-        * all while taking advantage of the concurrent nature of this D&C algorithm
-        * and reusing initial calculations for subsequent resolution stages
-        *
-        * Params:
-        * points: G.V
-        * cellSize: partition maximum
-        * leaderSpannerConstructor: initial call for constructor should be false by default
-        * numOfThreads: max number of threads used
-        *
-        * Returns:
-        * Graph consisting of points, edges, and adjacency list
+    * Constructs a geometric spanner
+    * Accomplished by partitioning the points into [1, cellSize] disjoint cells,
+    * then merging those cells to maintain the invariant using the Bridging heuristic described above
+    * all while taking advantage of the concurrent nature of this D&C algorithm
+    * and reusing initial calculations for subsequent resolution stages
+    *
+    * Params:
+    * points: G.V
+    * cellSize: partition maximum
+    * leaderSpannerConstructor: initial call for constructor should be false by default
+    * numOfThreads: max number of threads used
+    *
+    * Returns:
+    * Graph consisting of points, edges, and adjacency list
      */
     Graph partitionedSpanner(vector<Point> &points,
                              size_t cellSize,
