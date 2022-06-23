@@ -36,7 +36,7 @@ namespace spanners{
          *
          * Distant pair resolution consists of the same approach except we add two initial bridges:
          * The path from the closest pairs (Pi, Pj) that traverses the spanner in its current state
-         * The leader spanner path from each from the centroids of Partition_i to Partition_j
+         * The leader spanner path from the centroids of Partition_i to Partition_j
      */
 
     //TODO: find more elegant way to structure the algo without the need of a default boolean
