@@ -56,6 +56,14 @@ namespace spanners{
         cout << "Num of threads: ";
         cin >> numOfThreads;
 
+        bool sf{};
+        cout << "Measure SF: ";
+        cin >> sf;
+
+        bool print{};
+        cout <<"Print: ";
+        cin >> print;
+
         auto start = std::chrono::high_resolution_clock::now();
 
         Graph spanner = partitionedSpanner(points, cellSize, t, false, numOfThreads);
@@ -67,11 +75,15 @@ namespace spanners{
         cout << "Edges: " << spanner.edges.size() << endl;
         cout << "Points: " << spanner.points.size() << endl;
         cout << "M/N: " << static_cast<double>(spanner.edges.size()) / spanner.points.size() << endl;
-        StretchFactorResult results = ParallelStretchFactor(points, spanner.adjacencyMap, t, numOfThreads);
-        cout << "SF: " << results.stretchFactor << "\n";
-        cout << "Red Edges: " << results.errors.size() << "\n";
 
-        if(spanner.edges.size() + results.errors.size() < 50000){
+        StretchFactorResult results;
+        if(sf){
+            results = ParallelStretchFactor(points, spanner.adjacencyMap, t, numOfThreads);
+            cout << "SF: " << results.stretchFactor << "\n";
+            cout << "Red Edges: " << results.errors.size() / 2 << "\n";
+        }
+
+        if(print && spanner.edges.size() + results.errors.size() < 50000){
             GraphPrinter printer("./", "article");
             printer.autoscale(points.begin(), points.end());
             printer.drawEdges(spanner.edges.begin(), spanner.edges.end(), points);

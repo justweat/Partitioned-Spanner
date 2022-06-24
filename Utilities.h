@@ -41,6 +41,8 @@ namespace spanners {
 
     const number_t PI = 3.14159265358979323846264338327950288419716939937510;
 
+    enum class PartitionedSpannerLevel {PartitionedSpanner, LeaderSpanner, AuxiliarySpanner};
+
     number_t getDistance(Point u, Point v){
         return CGAL::sqrt(CGAL::squared_distance(u, v));
     }
@@ -54,12 +56,10 @@ namespace spanners {
     struct Partition{
         Partition(const vector<size_t> &indices,
                   size_t index,
-                  CGAL::Quadtree<spanners::K, std::vector<spanners::Point>>::Node& node,
                   const vector<Point> &points){
 
             this->indices = indices;
             this->partitionIndex = index;
-            this->originalNode = &node;
             this->points = points;
 
             for(const auto& i : indices){
@@ -76,7 +76,6 @@ namespace spanners {
         size_t leader{};
         size_t leaderSpannerIndex{};
         CGAL::Bbox_2 bounding_box{};
-        CGAL::Quadtree<spanners::K, std::vector<spanners::Point>>::Node* originalNode{};
         vector<vector<number_t>> distances{};
         unordered_map<size_t, size_t> localIndices{};
     };

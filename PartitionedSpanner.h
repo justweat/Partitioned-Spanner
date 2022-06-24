@@ -57,7 +57,7 @@ namespace spanners{
     *
     * Returns:
     * Graph consisting of points, edges, and adjacency list
-     */
+    */
     Graph partitionedSpanner(vector<Point> &points,
                              size_t cellSize,
                              double t,
@@ -101,7 +101,7 @@ namespace spanners{
                 indices.emplace_back(PointToIndex.at(p));
                 pts.emplace_back(p);
             }
-            Partition auxNode{indices, partitionIndex, i, pts};
+            Partition auxNode{indices, partitionIndex, pts};
             leaves.push_back(make_unique<Partition>(auxNode));
             leafIdentifier.insert(pair<QT_Node, size_t>{i, partitionIndex});
             ++partitionIndex;
@@ -163,6 +163,12 @@ namespace spanners{
 
         /*
          * Construct leader spanner
+         */
+        //TODO: Change first recursion to partitionedSpanner and any further recursions to WSPD spanner
+        /*
+         * spanner type == partition -> leader spanner = partitioned spanner(partition leader)
+         * spanner type == partition leader -> leader spanner = WSPD spanner(partitionLeader)
+         * base case -> point set <= cell size return FG Greedy spanner
          */
         Graph leaderSpanner = FG_GreedySpanner(leaderPoints, t);
 
