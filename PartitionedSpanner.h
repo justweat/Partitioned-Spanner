@@ -61,8 +61,18 @@ namespace spanners{
     Graph partitionedSpanner(vector<Point> &points,
                              size_t cellSize,
                              double t,
-                             bool leaderSpannerConstructor = false,
                              unsigned int numOfThreads = 1){
+
+//        cout << "Spanner for " << points.size() << endl;
+
+        size_t n = points.size();
+
+        /*
+         * Base case for recursive leaderSpanner calls
+         */
+        if(n <= cellSize){
+            return FG_GreedySpanner(points, t);
+        }
 
         numOfThreads = min(numOfThreads, thread::hardware_concurrency());
 
@@ -71,8 +81,6 @@ namespace spanners{
         //Prevents passing points by const ref
         Quadtree qt(points);
         qt.refine(numeric_limits<size_t>::max(), cellSize);
-
-        size_t n = points.size();
 
         unordered_map<Point, size_t> PointToIndex{};
         unordered_map<size_t, Point> IndexToPoint{};
@@ -170,11 +178,10 @@ namespace spanners{
          * spanner type == partition leader -> leader spanner = WSPD spanner(partitionLeader)
          * base case -> point set <= cell size return FG Greedy spanner
          */
-        Graph leaderSpanner = FG_GreedySpanner(leaderPoints, t);
 
-//        if(!leaderSpannerConstructor){
-//            leaderSpanner = partitionedSpanner(leaderPoints, cellSize, t, true, numOfThreads);
-//        }
+//        Graph leaderSpanner = FG_GreedySpanner(leaderPoints, t);
+
+        Graph leaderSpanner = partitionedSpanner(leaderPoints, cellSize, t, numOfThreads);
 
         /*
          * Initialize adjacency map
@@ -208,11 +215,9 @@ namespace spanners{
 
         }
 
-        if(!leaderSpannerConstructor){
-            for(const auto& e : leaderSpanner.edges){
-                adjMap.at(leaderPointTranslator.at(e.first)).push_back(leaderPointTranslator.at(e.second));
-                adjMap.at(leaderPointTranslator.at(e.second)).push_back(leaderPointTranslator.at(e.first));
-            }
+        for(const auto& e : leaderSpanner.edges){
+            adjMap.at(leaderPointTranslator.at(e.first)).push_back(leaderPointTranslator.at(e.second));
+            adjMap.at(leaderPointTranslator.at(e.second)).push_back(leaderPointTranslator.at(e.first));
         }
 
         /*
@@ -257,10 +262,8 @@ namespace spanners{
             totalEdges.push_back(e);
         }
 
-        if(!leaderSpannerConstructor){
-            for(auto& e : leaderSpanner.edges){
-                totalEdges.emplace_back(leaderPointTranslator.at(e.first), leaderPointTranslator.at(e.second));
-            }
+        for(auto& e : leaderSpanner.edges){
+            totalEdges.emplace_back(leaderPointTranslator.at(e.first), leaderPointTranslator.at(e.second));
         }
 
         cout << "Greedy Edge Count: " << sumGre << endl;

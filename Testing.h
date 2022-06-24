@@ -66,7 +66,7 @@ namespace spanners{
 
         auto start = std::chrono::high_resolution_clock::now();
 
-        Graph spanner = partitionedSpanner(points, cellSize, t, false, numOfThreads);
+        Graph spanner = partitionedSpanner(points, cellSize, t, numOfThreads);
 
         auto finish = std::chrono::high_resolution_clock::now();
         auto time = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
