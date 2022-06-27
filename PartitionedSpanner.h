@@ -172,16 +172,8 @@ namespace spanners{
         /*
          * Construct leader spanner
          */
-        //TODO: Change first recursion to partitionedSpanner and any further recursions to WSPD spanner
-        /*
-         * spanner type == partition -> leader spanner = partitioned spanner(partition leader)
-         * spanner type == partition leader -> leader spanner = WSPD spanner(partitionLeader)
-         * base case -> point set <= cell size return FG Greedy spanner
-         */
-
-//        Graph leaderSpanner = FG_GreedySpanner(leaderPoints, t);
-
         Graph leaderSpanner = partitionedSpanner(leaderPoints, cellSize, t, numOfThreads);
+//        Graph leaderSpanner = FG_GreedySpanner(leaderPoints, t);
 
         /*
          * Initialize adjacency map

@@ -111,7 +111,7 @@ namespace spanners{
 
                                 contiguousNeighbors.neNeighbors.emplace_back(pair<size_t, size_t>{neighborPair});
 
-                            }else{
+                            }else if(direction == Direction::NorthWest){
 
                                 contiguousNeighbors.nwNeighbors.emplace_back(pair<size_t, size_t>{neighborPair});
 
@@ -159,7 +159,7 @@ namespace spanners{
 
             vector<pair<size_t, size_t>> bridges{};
 
-            size_t counter{};
+//            size_t counter{};
 
             if(alphaInfo->indices.size() == 1){
                 alphaInfo->distances[0][0] = 0;
@@ -195,7 +195,8 @@ namespace spanners{
                 }
 
                 if(!found_path){
-                    ++counter;
+//                    ++counter;
+                    //TODO: this may (read: probably) need a sync mechanism
                     alphaInfo->contiguousResolutionEdges.emplace_back(Edge{u,v});
                     bridges.emplace_back(Edge{u, v});
                 }
