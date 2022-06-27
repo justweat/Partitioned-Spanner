@@ -34,7 +34,7 @@ namespace spanners {
     typedef pair<size_t, size_t> Edge;
     typedef K::FT number_t;
 
-    typedef CGAL::Quadtree<K, std::vector<Point>> Quadtree;
+    typedef CGAL::Quadtree<K, const std::vector<Point>> Quadtree;
     typedef Quadtree::Node QT_Node;
 
     typedef priority_queue<pair<Edge,number_t>, vector<pair<Edge,number_t>>, function<bool(pair<Edge,number_t>&, pair<Edge,number_t>&)>> PointPairPQ;

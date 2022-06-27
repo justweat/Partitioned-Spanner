@@ -58,7 +58,7 @@ namespace spanners{
     * Returns:
     * Graph consisting of points, edges, and adjacency list
     */
-    Graph partitionedSpanner(vector<Point> &points,
+    Graph partitionedSpanner(const vector<Point> &points,
                              size_t cellSize,
                              double t,
                              unsigned int numOfThreads = 1){
@@ -78,7 +78,6 @@ namespace spanners{
 
         if(numOfThreads < 1) numOfThreads = 1;
 
-        //Prevents passing points by const ref
         Quadtree qt(points);
         qt.refine(numeric_limits<size_t>::max(), cellSize);
 
