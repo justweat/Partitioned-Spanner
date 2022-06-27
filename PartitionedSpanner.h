@@ -58,7 +58,7 @@ namespace spanners{
     * Returns:
     * Graph consisting of points, edges, and adjacency list
     */
-    Graph partitionedSpanner(const vector<Point> &points,
+    Graph partitionedSpanner(vector<Point> &points,
                              size_t cellSize,
                              double t,
                              unsigned int numOfThreads = 1){
